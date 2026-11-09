@@ -1,37 +1,105 @@
+# HES Yönetim Sistemi
 
-```markdown
-# HES YÖNETİM SİSTEMİ: Hidroelektrik Santral Yönetim Platformu
+Hidroelektrik santrallerindeki izleme, üretim tahmini ve arıza yönetimi süreçlerini tek bir platformda toplayan, rol tabanlı yetkilendirmeye sahip bir backend sistemi.
 
-## 1. Projenin Amacı ve Vizyonu
-Projemizin en temel amacı; hidroelektrik santrallerindeki karmaşık süreçleri, dağınık verileri, geç fark edilen arızaları ve geciken müdahaleleri tek bir platformda toplayarak tamamen dijital ve akıllı bir yönetim sağlamaktır.  Manuel kontrollerin yerini otomasyonun aldığı bu sistem sayesinde yöneticiler ve çalışanlar sadece karar alma süreçlerine odaklanarak zamandan tasarruf ederler ve küçük sorunlar büyümeden çözülür. 
+9 kişilik bir ekiple, çevik (Agile) yöntemle geliştirildi. Orijinal depo: [yunuserme/HesYonetimSistemi](https://github.com/yunuserme/HesYonetimSistemi)
 
-## 2. Projenin Hedefleri
-Santral yönetimini daha verimli hale getirmek için sistemimiz üç ana hedef üzerine kurulmuştur:
-* **Gerçek Zamanlı ve Kesintisiz İzleme:** Su seviyesi, türbin durumu ve üretilen güç gibi hayati veriler anlık olarak tek bir ekranda toplanır.  Bir sorun oluştuğunda sistem, siz daha fark etmeden anında uyarı verir. 
-* **Yapay Zeka Destekli Üretim Tahmini:** Sistemdeki yapay zeka algoritmaları, mevcut su rezervini ve anlık hava durumu verilerini analiz ederek santralin haftalık üretim planını otomatik olarak hesaplar.  Böylece şebeke taahhütleri güvenle belirlenir. 
-* **Otomatik Arıza Yönetimi ve Takibi:** Sahadaki sensör bağlantılarından biri koptuğunda sistem otomatik olarak arıza kaydı oluşturur.  İlgili teknisyene iş emri gönderilir ve onarım tamamlanana kadar tüm süreç platform üzerinden takip edilir. 
+## Ne Sağlıyor
 
-## 3. Takım Üyeleri
-Bu proje, **Yazılım Mühendisliği Grup 2026/2028** tarafından geliştirilmektedir.  
-Takımımız: Semanur İmre, İsmihan Kırmızıoğlan, Elif Kara, Tunahan Işkın, Eren Bezek, Esma Bilen, Achmet Amet, Yasir Kara, Yunus Emre Erkuş. 
+- **Canlı izleme:** Türbin ve sensör verileri (RPM, sıcaklık, su seviyesi, güç) SCADA API'si üzerinden anlık olarak sunulur.
+- **Üretim tahmini:** RandomForest modeli, sensör verilerinden türbin bazında güç üretimi (MW) tahmin eder ve eşik dışı değerleri anomali olarak işaretler.
+- **Arıza ve iş emri takibi:** Alarmlar kayda geçer, iş emirleri `PENDING → ACCEPTED → IN_PROGRESS → COMPLETED` akışıyla takip edilir. Her durum değişikliği loglanır.
+- **Rol bazlı erişim:** Operatör, mühendis, teknisyen, yönetici ve admin rolleri yalnızca kendi yetkisindeki işlemleri yapabilir.
 
-## 4. Takım Üyelerinin Yetkinlikleri ve Görev Dağılımı
-Sistemde yetki karmaşasının önüne geçmek için herkes yalnızca kendi rolüne uygun ekranları ve verileri görür: 
-* **Santral Operatörü:** Sahadaki tüm sensörleri tek bir panelden izler.  Kapak ve türbin kontrollerini ekran üzerinden gerçekleştirir ve acil durumlarda anında müdahale eder. 
-* **Enerji Mühendisi:** Sistem tarafından otomatik hazırlanan haftalık üretim tahminlerini inceler.  Saniyeler içinde üretim planını onaylayarak hayata geçirir. 
-* **Ağ Yöneticisi:** Sistemdeki cihazların ağ bağlantılarını denetler.  Bağlantısı kopan cihazları anında görerek tek tıkla saha ekibi için iş emri oluşturur ve gönderir. 
-* **Saha Teknisyeni:** Kendisine atanan iş emirlerini mobil cihazından veya bilgisayarından anlık olarak görür.  Fiziksel onarımı tamamladıktan sonra durumu sisteme kaydederek iş akışını sonlandırır. 
+## Teknolojiler
 
-## 5. Kullanılacak Yazılım ve Donanım Teknolojileri
-Sistemin kusursuz işlemesi için modern teknolojilerden faydalanılmaktadır:
-* **Yazılım Teknolojileri:** Kullanıcı arayüzleri için modern web teknolojileri (React/Vue), yapay zeka tahmin algoritmaları ve arka uç işlemleri için Python, verilerin güvenli bir şekilde saklanması için güçlü veri tabanları kullanılmaktadır.
-* **Donanım Teknolojileri:** Su seviyesi ve türbin durumunu anlık okuyacak IoT tabanlı akıllı sensörler, verileri merkeze iletecek telemetri cihazları ve teknisyenlerin sahada kullanacağı akıllı mobil terminaller kullanılmaktadır.
+| Katman | Teknoloji |
+|---|---|
+| API | Python, FastAPI, Pydantic |
+| Veritabanı | PostgreSQL 16, SQLAlchemy (async), Alembic |
+| Güvenlik | JWT (access + refresh token), bcrypt, RBAC, rate limiting (slowapi) |
+| Makine öğrenmesi | scikit-learn (RandomForestRegressor), pandas, NumPy |
+| Altyapı | Docker Compose |
 
-## 6. Geliştirme Süreci (Çevik Metodoloji)
-Projemiz "Çevik (Agile)" yazılım geliştirme metodolojisi ile yürütülmektedir. Bu kapsamda projenin her bir modülü (Operatör Paneli, Mühendis Paneli vb.) kısa döngüler halinde adım adım geliştirilecek, test edilecek ve devreye alınacaktır. Süreç, "1. Veri gelir, 2. Ekranda görünür, 3. Sorun tespit edilir, 4. İş emri gider, 5. Sorun çözülür" iş akışıyla kesintisiz bir döngüde çalışacaktır. 
+## Benim Katkım
 
-## 7. Açık Çağrı: Bize Katılın!
-Enerji sektöründe dijital bir devrim yaratmak için yola çıktık. 
-* **Yazılım Geliştiricileri:** Açık kaynaklı projemize kod desteği vermek ve sistemimizi birlikte daha ileriye taşımak için GitHub üzerinden aramıza katılabilirsiniz.
-* **Yatırımcılar ve Bağışçılar:** Daha az arıza ve doğru üretim planlaması ile maliyetleri düşüren bu platformun büyümesi için finansal desteklerinizi bekliyoruz. Gelin, geleceğin akıllı enerji altyapısını birlikte inşa edelim!
+Ekipte **enerji tahmin modülü ve veritabanı altyapısından** sorumluydum (Elif Kara ile `elif-tunahan-energy-v2` dalında).
+
+**Enerji tahmin API'si (`/energy`)**
+- Veri servisindeki deneysel tahmin kodunu, API'den çağrılabilen bağımsız bir servis katmanına (`energy_prediction_service.py`) dönüştürdüm.
+- Model sunucu açılırken sentetik veriyle ön-eğitilir. Böylece gerçek veri yüklenmeden de tahmin endpoint'i çalışır, gerçek CSV verisi geldiğinde model yeniden eğitilebilir.
+- Frontend'in kullandığı 5 endpoint'i yazdım: tek nokta tahmini, tüm türbinler için tahmin listesi, tahmin geçmişi, sensör geçmişi ve model metrikleri.
+- RPM ve sıcaklık eşiklerine göre anomali tespiti ekledim.
+
+**Veritabanı ve kurulum**
+- Projenin kurulumunu engelleyen Alembic migration hatalarını çözdüm. Migration'ın `.env` dosyasından okunmasını sağladım ve Docker Compose ortam değişkenlerini düzelttim.
+- Pydantic doğrulama hatalarını ve sensör, türbin, alarm şemalarındaki uyumsuzlukları giderdim.
+- İş emirlerine teslim tarihi (`due_at`) alanını yeni bir migration ile ekledim ve iş emri durum akışının kurallarını genişlettim.
+
+**SCADA**
+- SCADA router'ını ana uygulamaya entegre ettim, canlı veri endpoint'lerindeki hataları düzelttim.
+
+**Sonuç:** Son commit'te 21 dosyada yaklaşık 900 satır değişiklik yaptım. Ekibin yerel ortamda tek komutla kurup çalıştırabildiği bir backend ve frontend'e bağlanan çalışır durumda bir tahmin modülü ortaya çıktı.
+
+## Kurulum
+
+Gereksinimler: Python 3.11+, Docker
+
+```bash
+git clone https://github.com/Tunahaniskin/HesYonetimSistemi.git
+cd HesYonetimSistemi/backend
+
+# Ortam değişkenleri
+cp .env.example .env        # DATABASE_URL, POSTGRES_PASSWORD ve SECRET_KEY değerlerini doldurun
+
+# Veritabanı
+docker compose up -d
+
+# Bağımlılıklar ve migration
+pip install -r requirements.txt
+alembic upgrade head
+
+# Örnek veriler (kullanıcılar, türbinler, sensörler)
+python -m app.seed
+
+# Sunucu
+uvicorn app.main:app --reload
 ```
+
+API dokümantasyonu: `http://localhost:8000/docs`
+
+## API Özeti
+
+| Modül | Prefix | İçerik |
+|---|---|---|
+| Kimlik doğrulama | `/auth` | Kayıt, giriş, token yenileme, çıkış |
+| SCADA | `/api` | Canlı veri, geçmiş, türbin ve sensör verileri |
+| Enerji tahmini | `/energy` | Tahmin, forecast, geçmiş, model metrikleri |
+| Türbinler | `/turbines` | Oluşturma, listeleme, güncelleme |
+| Sensörler | `/sensors` | Oluşturma, listeleme, güncelleme |
+| Alarmlar | `/alarms` | Oluşturma, listeleme |
+| İş emirleri | `/work-orders` | Oluşturma, listeleme, durum güncelleme |
+
+## Yetki Matrisi
+
+| İşlem | Operatör | Mühendis | Teknisyen | Yönetici | Admin |
+|---|---|---|---|---|---|
+| Türbin durdurma / savak açma | Evet | - | - | - | Evet |
+| Üretim tahminlerini görme | - | Evet | - | Evet | Evet |
+| İş emirlerini görme | - | - | Evet | - | Evet |
+| Rapor dışa aktarma | - | Evet | - | Evet | Evet |
+
+## Ekip
+
+Yazılım Mühendisliği Grup 2026/2028
+
+Semanur İmre, İsmihan Kırmızıoğlan, Elif Kara, Tunahan Işkın, Eren Bezek, Esma Bilen, Achmet Amet, Yasir Kara, Yunus Emre Erkuş
+
+| Alan | Geliştiriciler |
+|---|---|
+| Kimlik doğrulama ve çekirdek backend | Esma Bilen, Eren Bezek |
+| Enerji tahmini ve veritabanı altyapısı | Elif Kara, Tunahan Işkın |
+| Veri servisi (sensör simülasyonu) | Semanur İmre, İsmihan Kırmızıoğlan |
+| İş emri sistemi | Yunus Emre Erkuş |
+| SCADA arayüzü | Achmet Amet |
+| Mühendis ve teknisyen arayüzleri | Yasir Kara |
